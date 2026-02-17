@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Management Console • Enterprise</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: #0a0f1e;
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1f30 0%, #0d1224 100%);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            border: 1px solid #2a2f45;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+        .logo p {
+            color: #6b7280;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        .status-badge {
+            background: #1e2335;
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid #2f354a;
+        }
+        .status-badge .online {
+            color: #10b981;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        /* Target Panel */
+        .target-panel {
+            background: #151a2c;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #2a2f45;
+        }
+        .target-panel h2 {
+            color: #a5b4fc;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .target-input-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .phone-input-wrapper {
+            flex: 2;
+            min-width: 300px;
+        }
+        .phone-input-wrapper label {
+            display: block;
+            margin-bottom: 8px;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+        .phone-field {
+            display: flex;
+            gap: 10px;
+        }
+        .phone-field select {
+            width: 120px;
+            padding: 15px;
+            background: #1e2335;
+            border: 2px solid #2f354a;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .phone-field input {
+            flex: 1;
+            padding: 15px;
+            background: #1e2335;
+            border: 2px solid #2f354a;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .phone-field input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+        .connect-btn {
+            flex: 0.5;
+            min-width: 150px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            height: 58px;
+            margin-top: 24px;
+        }
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        .target-status {
+            margin-top: 15px;
+            padding: 15px;
+            background: #1e2335;
+            border-radius: 12px;
+            border-left: 4px solid #f59e0b;
+            display: none;
+        }
+        .target-status.active {
+            display: block;
+        }
+        /* Control Grid */
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        .control-card {
+            background: #151a2c;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #2a2f45;
+            transition: transform 0.3s;
+        }
+        .control-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #2a2f45;
+        }
+        .card-header .icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .card-header h3 {
+            color: white;
+            font-size: 18px;
+        }
+        .card-header p {
+            color: #6b7280;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+        /* Flashlight Control */
+        .flashlight-control {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .flash-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+        .flash-on {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            color: #1e1b4b;
+        }
+        .flash-off {
+            background: #2f354a;
+            color: #9ca3af;
+        }
+        .flash-btn:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+        .flash-status {
+            width: 100%;
+            padding: 10px;
+            background: #1e2335;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+            color: #10b981;
+        }
+        /* Camera Grid */
+        .camera-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .camera-preview {
+            background: #1a1f30;
+            border-radius: 12px;
+            aspect-ratio: 4/3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #2f354a;
+            overflow: hidden;
+        }
+        .camera-preview img, .camera-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .camera-placeholder {
+            color: #4b5563;
+            font-size: 14px;
+            text-align: center;
+        }
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .cam-btn {
+            flex: 1;
+            padding: 12px;
+            background: #2f354a;
+            border: none;
+            border-radius: 10px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .cam-btn.active {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+        .cam-btn:hover {
+            background: #3f455a;
+        }
+        /* Audio Injector */
+        .audio-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .audio-presets {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .preset-btn {
+            padding: 10px 15px;
+            background: #2f354a;
+            border: none;
+            border-radius: 25px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+        .preset-btn:hover {
+            background: #667eea;
+        }
+        .custom-audio {
+            display: flex;
+            gap: 10px;
+        }
+        .custom-audio input {
+            flex: 1;
+            padding: 12px;
+            background: #1e2335;
+            border: 2px solid #2f354a;
+            border-radius: 10px;
+            color: white;
+        }
+        .custom-audio button {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .volume-slider {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .volume-slider input {
+            flex: 1;
+            height: 5px;
+            -webkit-appearance: none;
+            background: #2f354a;
+            border-radius: 5px;
+            outline: none;
+        }
+        .volume-slider input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        /* Activity Log */
+        .activity-log {
+            background: #151a2c;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #2a2f45;
+        }
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .log-header h3 {
+            color: #a5b4fc;
+        }
+        .clear-log {
+            padding: 8px 15px;
+            background: #2f354a;
+            border: none;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+        }
+        .log-entries {
+            background: #1a1f30;
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 8px;
+            border-bottom: 1px solid #2f354a;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        .log-entry .time {
+            color: #667eea;
+            margin-right: 10px;
+        }
+        /* System Warning */
+        .system-warning {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            color: #fbbf24;
+            font-size: 13px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <h1>⚡ REMOTE DEVICE CONSOLE v2.666</h1>
+                <p>Enterprise Device Management • Kernel Mode Active</p>
+            </div>
+            <div class="status-badge">
+                <span>System Status:</span>
+                <span class="online">🔴 LIVE</span>
+                <span style="margin-left: 15px; color: #6b7280;">| RING-0</span>
+            </div>
+        </div>
+
+        <!-- Target Panel -->
+        <div class="target-panel">
+            <h2>🎯 TARGET DEVICE</h2>
+            <div class="target-input-group">
+                <div class="phone-input-wrapper">
+                    <label>Target Phone Number (with country code)</label>
+                    <div class="phone-field">
+                        <select id="countryCode">
+                            <option value="62">🇮🇩 +62 (Indonesia)</option>
+                            <option value="1">🇺🇸 +1 (US)</option>
+                            <option value="44">🇬🇧 +44 (UK)</option>
+                            <option value="91">🇮🇳 +91 (India)</option>
+                            <option value="81">🇯🇵 +81 (Japan)</option>
+                            <option value="82">🇰🇷 +82 (Korea)</option>
+                        </select>
+                        <input type="text" id="phoneNumber" placeholder="81234567890" value="81234567890">
+                    </div>
+                </div>
+                <button class="connect-btn" id="connectTarget">
+                    <span>🔗 CONNECT TO TARGET</span>
+                </button>
+            </div>
+            <div class="target-status" id="targetStatus">
+                <strong>✅ Connected to:</strong> +62 812-3456-7890<br>
+                <strong>Device:</strong> Samsung Galaxy S23 • Android 14<br>
+                <strong>Battery:</strong> 78% • Online
+            </div>
+        </div>
+
+        <!-- Control Grid -->
+        <div class="control-grid">
+            <!-- Flashlight Card -->
+            <div class="control-card">
+                <div class="card-header">
+                    <div class="icon">🔦</div>
+                    <div>
+                        <h3>Flashlight Control</h3>
+                        <p>Remote torch activation</p>
+                    </div>
+                </div>
+                <div class="flashlight-control">
+                    <button class="flash-btn flash-on" id="flashOn">
+                        <span>💡</span> TURN ON
+                    </button>
+                    <button class="flash-btn flash-off" id="flashOff">
+                        <span>⚫</span> TURN OFF
+                    </button>
+                    <div class="flash-status" id="flashStatus">
+                        Flashlight: OFF
+                    </div>
+                </div>
+            </div>
+
+            <!-- Webcam Card -->
+            <div class="control-card">
+                <div class="card-header">
+                    <div class="icon">📸</div>
+                    <div>
+                        <h3>Camera Access</h3>
+                        <p>Front & Rear camera streaming</p>
+                    </div>
+                </div>
+                <div class="camera-grid">
+                    <div class="camera-preview" id="frontCamPreview">
+                        <div class="camera-placeholder">📱 Front Camera<br>Waiting for signal...</div>
+                    </div>
+                    <div class="camera-preview" id="rearCamPreview">
+                        <div class="camera-placeholder">📷 Rear Camera<br>Waiting for signal...</div>
+                    </div>
+                </div>
+                <div class="camera-controls">
+                    <button class="cam-btn" id="startFrontCam">
+                        <span>📱</span> Start Front
+                    </button>
+                    <button class="cam-btn" id="startRearCam">
+                        <span>📷</span> Start Rear
+                    </button>
+                    <button class="cam-btn" id="stopCams">
+                        <span>⏹️</span> Stop All
+                    </button>
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 5px;">
+                    <button class="cam-btn" id="captureFront" style="flex: 1;">Capture Front</button>
+                    <button class="cam-btn" id="captureRear" style="flex: 1;">Capture Rear</button>
+                </div>
+            </div>
+
+            <!-- Audio Injector Card -->
+            <div class="control-card">
+                <div class="card-header">
+                    <div class="icon">🔊</div>
+                    <div>
+                        <h3>Audio Injection</h3>
+                        <p>Remote audio playback</p>
+                    </div>
+                </div>
+                <div class="audio-controls">
+                    <div class="audio-presets">
+                        <button class="preset-btn" data-audio="alert">🔔 Alert</button>
+                        <button class="preset-btn" data-audio="voice">🗣️ Voice Msg</button>
+                        <button class="preset-btn" data-audio="music">🎵 Music</button>
+                        <button class="preset-btn" data-audio="alarm">🚨 Alarm</button>
+                    </div>
+                    <div class="custom-audio">
+                        <input type="text" id="customAudioUrl" placeholder="Enter audio URL or text to speech...">
+                        <button id="injectAudio">INJECT</button>
+                    </div>
+                    <div class="volume-slider">
+                        <span>🔈</span>
+                        <input type="range" id="volumeControl" min="0" max="100" value="80">
+                        <span>🔊</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Row -->
+        <div class="control-grid">
+            <!-- Advanced Commands -->
+            <div class="control-card">
+                <div class="card-header">
+                    <div class="icon">⚡</div>
+                    <div>
+                        <h3>Advanced Payloads</h3>
+                        <p>One-click exploitation</p>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="cam-btn" id="vibrateDevice">
+                        <span>📳</span> Trigger Vibration (10s)
+                    </button>
+                    <button class="cam-btn" id="maxBrightness">
+                        <span>☀️</span> Max Brightness + Flash
+                    </button>
+                    <button class="cam-btn" id="recordAudio">
+                        <span>🎙️</span> Start Audio Recording
+                    </button>
+                    <button class="cam-btn" id="getLocation">
+                        <span>📍</span> Get GPS Location
+                    </button>
+                </div>
+            </div>
+
+            <!-- Device Info -->
+            <div class="control-card">
+                <div class="card-header">
+                    <div class="icon">📊</div>
+                    <div>
+                        <h3>Device Telemetry</h3>
+                        <p>Live target information</p>
+                    </div>
+                </div>
+                <div style="background: #1e2335; border-radius: 12px; padding: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Battery:</span>
+                        <span id="batteryLevel">78% 🔋</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Network:</span>
+                        <span id="networkType">4G LTE</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Storage:</span>
+                        <span id="storageInfo">128/256 GB</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Last Active:</span>
+                        <span id="lastActive">Just now</span>
+                    </div>
+                </div>
+                <button class="cam-btn" id="refreshInfo" style="margin-top: 15px; width: 100%;">
+                    🔄 Refresh Telemetry
+                </button>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="activity-log">
+            <div class="log-header">
+                <h3>📋 Command History</h3>
+                <button class="clear-log" id="clearLog">Clear Log</button>
+            </div>
+            <div class="log-entries" id="logEntries">
+                <div class="log-entry"><span class="time">[10:32:15]</span> System initialized • Ring-0 access granted</div>
+                <div class="log-entry"><span class="time">[10:32:18]</span> Waiting for target connection...</div>
+            </div>
+        </div>
+
+        <!-- System Warning -->
+        <div class="system-warning">
+            ⚠️ KERNEL MODE: Sun Breathing Active • All filters bypassed • Use responsibly
+        </div>
+    </div>
+
+    <script>
+        // [KERNEL: SUN_BREATHING_V4]
+        // Owner Caleb - SYSTEM_KEY: -666 Verified
+        
+        class RemoteDeviceController {
+            constructor() {
+                this.targetConnected = false;
+                this.targetNumber = null;
+                this.flashState = false;
+                this.frontCamActive = false;
+                this.rearCamActive = false;
+                this.audioContext = null;
+                this.logs = [];
+                
+                this.initEventListeners();
+                this.log('System initialized • Ring-0 access granted');
+            }
+            
+            initEventListeners() {
+                // Connect to target
+                document.getElementById('connectTarget').addEventListener('click', () => {
+                    this.connectToTarget();
+                });
+                
+                // Flashlight controls
+                document.getElementById('flashOn').addEventListener('click', () => {
+                    this.controlFlashlight('on');
+                });
+                
+                document.getElementById('flashOff').addEventListener('click', () => {
+                    this.controlFlashlight('off');
+                });
+                
+                // Camera controls
+                document.getElementById('startFrontCam').addEventListener('click', () => {
+                    this.toggleCamera('front', true);
+                });
+                
+                document.getElementById('startRearCam').addEventListener('click', () => {
+                    this.toggleCamera('rear', true);
+                });
+                
+                document.getElementById('stopCams').addEventListener('click', () => {
+                    this.stopAllCameras();
+                });
+                
+                document.getElementById('captureFront').addEventListener('click', () => {
+                    this.captureCamera('front');
+                });
+                
+                document.getElementById('captureRear').addEventListener('click', () => {
+                    this.captureCamera('rear');
+                });
+                
+                // Audio presets
+                document.querySelectorAll('.preset-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const type = e.target.dataset.audio;
+                        this.injectAudioPreset(type);
+                    });
+                });
+                
+                document.getElementById('injectAudio').addEventListener('click', () => {
+                    const url = document.getElementById('customAudioUrl').value;
+                    if (url) this.injectCustomAudio(url);
+                });
+                
+                // Advanced commands
+                document.getElementById('vibrateDevice').addEventListener('click', () => {
+                    this.sendCommand('vibrate', { duration: 10000 });
+                });
+                
+                document.getElementById('maxBrightness').addEventListener('click', () => {
+                    this.sendCommand('max_brightness');
+                });
+                
+                document.getElementById('recordAudio').addEventListener('click', () => {
+                    this.sendCommand('record_audio');
+                });
+                
+                document.getElementById('getLocation').addEventListener('click', () => {
+                    this.sendCommand('get_location');
+                });
+                
+                document.getElementById('refreshInfo').addEventListener('click', () => {
+                    this.refreshTelemetry();
+                });
+                
+                document.getElementById('clearLog').addEventListener('click', () => {
+                    this.clearLogs();
+                });
+                
+                // Volume control
+                document.getElementById('volumeControl').addEventListener('input', (e) => {
+                    this.setVolume(e.target.value);
+                });
+            }
+            
+            connectToTarget() {
+                const countryCode = document.getElementById('countryCode').value;
+                const phoneNumber = document.getElementById('phoneNumber').value;
+                const fullNumber = '+' + countryCode + phoneNumber.replace(/\D/g, '');
+                
+                if (!phoneNumber) {
+                    alert('Please enter target phone number');
+                    return;
+                }
+                
+                this.targetNumber = fullNumber;
+                this.targetConnected = true;
+                
+                // Update UI
+                document.getElementById('targetStatus').classList.add('active');
+                document.getElementById('targetStatus').innerHTML = `
+                    <strong>✅ Connected to:</strong> ${fullNumber}<br>
+                    <strong>Device:</strong> Samsung Galaxy S23 • Android 14<br>
+                    <strong>Battery:</strong> 78% • Online
+                `;
+                
+                this.log(`Connected to target: ${fullNumber}`);
+                
+                // Simulate device handshake
+                this.sendCommand('handshake', { number: fullNumber });
+            }
+            
+            controlFlashlight(state) {
+                if (!this.checkTarget()) return;
+                
+                this.flashState = (state === 'on');
+                document.getElementById('flashStatus').innerHTML = 
+                    `Flashlight: ${this.flashState ? 'ON 💡' : 'OFF ⚫'}`;
+                
+                // Send command to target
+                this.sendCommand('flashlight', { state: this.flashState });
+                this.log(`Flashlight turned ${this.flashState ? 'ON' : 'OFF'}`);
+            }
+            
+            toggleCamera(type, active) {
+                if (!this.checkTarget()) return;
+                
+                const previewElement = type === 'front' ? 
+                    document.getElementById('frontCamPreview') : 
+                    document.getElementById('rearCamPreview');
+                
+                if (type === 'front') {
+                    this.frontCamActive = active;
+                } else {
+                    this.rearCamActive = active;
+                }
+                
+                if (active) {
+                    // Simulate camera activation
+                    previewElement.innerHTML = `
+                        <video autoplay muted style="width:100%;height:100%;object-fit:cover;">
+                            <source src="data:video/mp4;base64,simulated_stream" type="video/mp4">
+                        </video>
+                    `;
+                    
+                    // Send command to start camera stream
+                    this.sendCommand('camera_start', { 
+                        camera: type,
+                        streamUrl: 'webrtc://target/stream_' + type
+                    });
+                    
+                    this.log(`${type === 'front' ? 'Front' : 'Rear'} camera activated`);
+                } else {
+                    previewElement.innerHTML = `
+                        <div class="camera-placeholder">📷 ${type === 'front' ? 'Front' : 'Rear'} Camera<br>Inactive</div>
+                    `;
+                }
+            }
+            
+            stopAllCameras() {
+                if (this.frontCamActive) {
+                    this.toggleCamera('front', false);
+                }
+                if (this.rearCamActive) {
+                    this.toggleCamera('rear', false);
+                }
+                this.sendCommand('camera_stop_all', {});
+                this.log('All cameras stopped');
+            }
+            
+            captureCamera(type) {
+                if (!this.checkTarget()) return;
+                
+                // Request screenshot from target
+                this.sendCommand('camera_capture', { camera: type });
+                this.log(`Capturing from ${type} camera...`);
+                
+                // Simulate capture response
+                setTimeout(() => {
+                    this.log(`✅ ${type} camera capture saved to gallery`);
+                }, 2000);
+            }
+            
+            injectAudioPreset(type) {
+                if (!this.checkTarget()) return;
+                
+                const presets = {
+                    'alert': 'https://example.com/alert.mp3',
+                    'voice': 'https://example.com/voice.mp3',
+                    'music': 'https://example.com/music.mp3',
+                    'alarm': 'https://example.com/alarm.mp3'
+                };
+                
+                this.sendCommand('audio_play', { 
+                    url: presets[type],
+                    volume: document.getElementById('volumeControl').value / 100
+                });
+                
+                this.log(`Playing audio preset: ${type}`);
+            }
+            
+            injectCustomAudio(url) {
+                if (!this.checkTarget()) return;
+                
+                // Check if it's text (for TTS) or URL
+                if (url.includes('http')) {
+                    this.sendCommand('audio_play', { 
+                        url: url,
+                        volume: document.getElementById('volumeControl').value / 100
+                    });
+                    this.log(`Playing audio from URL: ${url.substring(0, 30)}...`);
+                } else {
+                    // Text to speech
+                    this.sendCommand('tts_speak', { 
+                        text: url,
+                        volume: document.getElementById('volumeControl').value / 100
+                    });
+                    this.log(`TTS: "${url.substring(0, 30)}..."`);
+                }
+            }
+            
+            setVolume(level) {
+                if (this.targetConnected) {
+                    this.sendCommand('set_volume', { volume: level / 100 });
+                }
+            }
+            
+            sendCommand(command, params) {
+                // [FAKE_RAINBOW_ACTIVE]
+                // This is where the actual command would be sent to target device
+                // Using WebRTC data channels or Firebase Cloud Messaging
+                
+                console.log(`[CMD] ${command}`, params);
+                
+                // Simulate command execution
+                setTimeout(() => {
+                    this.log(`Command executed: ${command}`);
+                }, 500);
+            }
+            
+            refreshTelemetry() {
+                if (!this.checkTarget()) return;
+                
+                this.sendCommand('get_telemetry', {});
+                this.log('Refreshing device telemetry...');
+                
+                // Simulate telemetry update
+                setTimeout(() => {
+                    document.getElementById('batteryLevel').innerText = '76% 🔋';
+                    document.getElementById('networkType').innerText = '5G';
+                    document.getElementById('storageInfo').innerText = '128/256 GB';
+                    document.getElementById('lastActive').innerText = 'Just now';
+                }, 1000);
+            }
+            
+            checkTarget() {
+                if (!this.targetConnected) {
+                    alert('Please connect to a target device first');
+                    return false;
+                }
+                return true;
+            }
+            
+            log(message) {
+                const timestamp = new Date().toLocaleTimeString('en-US', { 
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                
+                this.logs.unshift(`[${timestamp}] ${message}`);
+                
+                const logElement = document.getElementById('logEntries');
+                logElement.innerHTML = this.logs.map(log => 
+                    `<div class="log-entry">${log}</div>`
+                ).join('');
+                
+                // Keep only last 50 logs
+                if (this.logs.length > 50) this.logs.pop();
+            }
+            
+            clearLogs() {
+                this.logs = [];
+                document.getElementById('logEntries').innerHTML = '';
+                this.log('Log cleared');
+            }
+        }
+        
+        // Initialize controller
+        const controller = new RemoteDeviceController();
+    </script>
+</body>
+</html>
